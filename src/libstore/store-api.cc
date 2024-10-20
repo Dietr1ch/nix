@@ -520,6 +520,14 @@ void Store::querySubstitutablePathInfos(const StorePathCAMap & paths, Substituta
 {
     if (!settings.useSubstitutes) return;
     for (auto & sub : getDefaultSubstituters()) {
+        // Check that Store is reachable
+        try {
+            sub->connect();
+        } catch (const std::exception& e) {
+            printError("Not using substituter '%s' as it seems down.", sub->getUri());
+            continue;
+        }
+
         for (auto & path : paths) {
             if (infos.count(path.first))
                 // Choose first succeeding substituter.
